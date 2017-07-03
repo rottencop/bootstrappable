@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node bin/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "devServer": "nodemon bin/app.js"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,7 @@
     "jsonwebtoken": "^7.4.1",
     "mongoose": "^4.11.1",
     "morgan": "^1.8.2",
+    "nodemon": "^1.11.0",
     "require-dir": "^0.3.2"
   }
 }
