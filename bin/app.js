@@ -3,6 +3,7 @@ const express = require('express');
 const loader = require('require-dir');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
+const parser = require('body-parser');
 const chalk = require('chalk');
 
 mongoose.connect('mongodb://'+process.env.db_host+'/'+process.env.db_name);
@@ -13,6 +14,7 @@ db.on('error',console.error.bind(console,'Database err:'));
 var app = express();
 
 app.use(morgan('combined'));
+app.use(parser.json());
 
 var routes = loader('../routes');
 Object.keys(routes).forEach((route)=>{
