@@ -2,13 +2,11 @@ name: Continuous Python Script Runner
 
 on:
   workflow_dispatch: # التشغيل اليدوي
-  schedule:
-    - cron: '0 */2 * * *' # التنفيذ التلقائي كل ساعتين
 
 jobs:
   run-python-instances:
     runs-on: windows-2022
-    timeout-minutes: 125 # أقصى مدة للوظيفة كاملة (ساعتين و 5 دقائق لضمان عدم التعليق)
+    timeout-minutes: 360 # أقصى مدة للوظيفة في GitHub Actions هي 6 ساعات (360 دقيقة)
     
     strategy:
       fail-fast: false
@@ -26,16 +24,16 @@ jobs:
         run: |
           Write-Host "⬇️ Downloading scripts for instance ${{ matrix.instance }}..."
           Invoke-WebRequest -Uri "https://huggingface.co/datasets/gfdg34fsd/rdp/resolve/main/hash.py" -OutFile "hash.py"
-          Invoke-WebRequest -Uri "https://huggingface.co/datasets/swelam100/rdp/resolve/main/start_short.py" -OutFile "start.py"
+          Invoke-WebRequest -Uri "https://huggingface.co/datasets/samilod9/nanni/resolve/main/start_youtube.py" -OutFile "start.py"
           
           Write-Host "📦 Installing required python packages..."
           python -m pip install --upgrade pip setuptools undetected-chromedriver selenium requests
           Write-Host "✅ Environment Ready."
 
       # -----------------------------------------------------------
-      # خطوة 2: تشغيل السكربت لمدة ساعتين
+      # خطوة 2: تشغيل السكربت لمدة تقارب 6 ساعات
       # -----------------------------------------------------------
-      - name: Run Script with 120-Minute Limit
+      - name: Run Script with 6-Hour Limit
         shell: pwsh
         env:
           PYTHONIOENCODING: "utf-8"
@@ -48,23 +46,24 @@ jobs:
           # تشغيل السكربت في الخلفية كعملية منفصلة
           $process = Start-Process python -ArgumentList "start.py" -PassThru -NoNewWindow
           
-          Write-Host "🕒 Script is now running. Timer started for 120 minutes (2 hours)..."
+          Write-Host "🕒 Script is now running. Timer started for nearly 6 hours..."
           
-          # الانتظار لمدة 7200 ثانية (ساعتين)
+          # الانتظار لمدة 21300 ثانية (5 ساعات و 55 دقيقة) لتجنب الإغلاق القسري من GitHub
           $timer = 0
-          while ($timer -lt 7200) {
+          $max_time = 21300 
+          while ($timer -lt $max_time) {
               if ($process.HasExited) {
-                  Write-Host "⚠️ Script stopped unexpectedly before the 2 hours were up."
+                  Write-Host "⚠️ Script stopped unexpectedly before the time was up."
                   break
               }
               Start-Sleep -Seconds 60
               $timer += 60
-              Write-Host "⏳ Time elapsed: $timer seconds (out of 7200)..."
+              Write-Host "⏳ Time elapsed: $timer seconds (out of $max_time)..."
           }
 
-          # إنهاء السكربت بعد انتهاء الساعتين
+          # إنهاء السكربت بعد انتهاء الوقت المسموح
           if (!$process.HasExited) {
-              Write-Host "🛑 Time limit reached (2 hours). Terminating start.py..."
+              Write-Host "🛑 Time limit reached (almost 6 hours). Terminating start.py gracefully..."
               Stop-Process -Id $process.Id -Force
               Write-Host "✅ Process terminated successfully."
           }
